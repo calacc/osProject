@@ -3,6 +3,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <time.h>
 
 void printMenuRegularFile()
 {
@@ -25,6 +26,14 @@ void printMenuSymbolicLink()
 	printf("-a: access rights\n");
 }
 
+void getName(char *path)
+{
+	char name[30]; strcpy(name, path);
+	if(strchr(name, '/')!=NULL)
+		strcpy(name, strrchr(name, '/')+1);
+	printf("%s\n", name);
+}
+
 void executeOperations(char path[])
 {
 	struct stat filestat;
@@ -37,15 +46,88 @@ void executeOperations(char path[])
 	if(S_ISREG(filestat.st_mode))//regular file
 	{
 		printMenuRegularFile();
-		
 		scanf("%s", operations);
+		
+		for(int i=1; operations[i]; ++i)
+		{
+			switch(operations[i])
+			{
+				case 'n': 
+				{
+					getName(path);
+					break;
+				}
+				case 'd': 
+				{
+					printf("size: %lld\n", (long long)filestat.st_size);
+					break;
+				}
+				case 'h':
+				{
+					printf("number of hard links: %d\n", (int)filestat.st_nlink);
+					break;
+				}
+				case 'm': 
+				{
+					printf("time of last modification: %s", ctime(&filestat.st_mtime));
+					break;
+				}
+				case 'a': 
+				{
+					printf("access rights: ");
+                    printf((filestat.st_mode & S_IRUSR) ? "r" : "-");
+                    printf((filestat.st_mode & S_IWUSR) ? "w" : "-");
+                    printf((filestat.st_mode & S_IXUSR) ? "x" : "-");
+                    printf((filestat.st_mode & S_IRGRP) ? "r" : "-");
+                    printf((filestat.st_mode & S_IWGRP) ? "w" : "-");
+                    printf((filestat.st_mode & S_IXGRP) ? "x" : "-");
+                    printf((filestat.st_mode & S_IROTH) ? "r" : "-");
+                    printf((filestat.st_mode & S_IWOTH) ? "w" : "-");
+                    printf((filestat.st_mode & S_IXOTH) ? "x" : "-");
+                    printf("\n");
+					break;
+				}
+				case 'l': 
+				{
+					char linkname[20];
+					printf("please provide a link name: ");
+					scanf("%s", linkname);
+					if(symlink(path, linkname)<0)
+					{
+						printf("unable to create symbolic link %s", linkname);
+						break;
+					}
+					printf("symbolic link %s was created successfully", linkname);
+					break;
+				}
+				default: printf("%c is not a valid operation!", operations[i]);
+			}
+		}
+		
 		return;
 	}
 	if(S_ISLNK(filestat.st_mode))//symbolic link
 	{
-		printMenuSymbolicLink();
-		
+		printMenuSymbolicLink();		
 		scanf("%s", operations);
+		
+		for(int i=1; operations[i]; ++i)
+		{
+			// switch(operations[i])
+			// {
+				// case 'n': 
+				// {
+					// getName(path);
+					// break;
+				// }
+				// case 'l': break;
+				// case 'd': break;
+				// case 't': break;
+				// case 'a': break;
+				// default: printf("%c is not a valid operation!", operations[i]);
+			// }
+		}
+		
 		return;
 	}
 	if(S_ISDIR(filestat.st_mode))//directory
@@ -59,8 +141,10 @@ int main(int argc, char* argv[])
 {
 	for(int i=1; i<argc; ++i)
 	{
-		char path[50], operations[50];
+		char path[50];
 		strcpy(path, argv[i]);
 		executeOperations(path);
 	}
+
 }
+ 
