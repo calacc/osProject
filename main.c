@@ -1,10 +1,11 @@
 #include <stdio.h>
+#include <dirent.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <time.h>
-
+//for each file the name and type will be displayed si dupa afisezi meniu
 void printMenuRegularFile()
 {
 	printf("You can execute the following operations:\n");
@@ -26,6 +27,15 @@ void printMenuSymbolicLink()
 	printf("-a: access rights.\n");
 }
 
+void printMenuDirectory()
+{
+	printf("You can execute the following operations:\n");
+	printf("-n: directory name;\n");
+	printf("-d: size;\n");
+	printf("-a: access rights;\n");
+	printf("-c: total number of files with the \".c\" extension.\n");
+}
+
 void getName(char *path)
 {
 	char name[30]; strcpy(name, path);
@@ -42,9 +52,12 @@ void executeOperations(char path[])
 		printf("Eror: unable to stat \"%s\" ", path);
 		return;
 	}
+	printf("Name: ");
+	getName(path);
 	char operations[50];
 	if(S_ISREG(filestat.st_mode))//regular file
 	{
+		printf("File type: regular file.\n");
 		printMenuRegularFile();
 		scanf("%s", operations);
 		
@@ -74,17 +87,19 @@ void executeOperations(char path[])
 				}
 				case 'a': 
 				{
-					printf("Access rights of %s: ", path);
-                    printf((filestat.st_mode & S_IRUSR) ? "r" : "-");
-                    printf((filestat.st_mode & S_IWUSR) ? "w" : "-");
-                    printf((filestat.st_mode & S_IXUSR) ? "x" : "-");
-                    printf((filestat.st_mode & S_IRGRP) ? "r" : "-");
-                    printf((filestat.st_mode & S_IWGRP) ? "w" : "-");
-                    printf((filestat.st_mode & S_IXGRP) ? "x" : "-");
-                    printf((filestat.st_mode & S_IROTH) ? "r" : "-");
-                    printf((filestat.st_mode & S_IWOTH) ? "w" : "-");
-                    printf((filestat.st_mode & S_IXOTH) ? "x" : "-");
-                    printf("\n");
+					printf("Access rights of %s: \n", path);
+					printf("User:\n");
+                    printf((filestat.st_mode & S_IRUSR) ? "Read - yes\n" : "Read - no\n");
+                    printf((filestat.st_mode & S_IWUSR) ? "Write - yes\n" : "Write - no\n");
+                    printf((filestat.st_mode & S_IXUSR) ? "Execute - yes\n" : "Execute - no\n");
+					printf("Group:\n");
+                    printf((filestat.st_mode & S_IRGRP) ? "Read - yes\n" : "Read - no\n");
+                    printf((filestat.st_mode & S_IWGRP) ? "Write - yes\n" : "Write - no\n");
+                    printf((filestat.st_mode & S_IXGRP) ? "Execute - yes\n" : "Execute - no\n");
+					printf("Others:\n");
+                    printf((filestat.st_mode & S_IROTH) ? "Read - yes\n" : "Read - no\n");
+                    printf((filestat.st_mode & S_IWOTH) ? "Write - yes\n" : "Write - no\n");
+                    printf((filestat.st_mode & S_IXOTH) ? "Execute - yes\n" : "Execute - no\n");
 					break;
 				}
 				case 'l': 
@@ -108,6 +123,8 @@ void executeOperations(char path[])
 	}
 	if(S_ISLNK(filestat.st_mode))//symbolic link
 	{
+		printf("File type: symbolic link.\n");
+		
 		printMenuSymbolicLink();		
 		scanf("%s", operations);
 		
@@ -144,17 +161,19 @@ void executeOperations(char path[])
 				}
 				case 'a':
 				{
-					printf("Access rights of \"%s\": ", path);
-                    printf((filestat.st_mode & S_IRUSR) ? "r" : "-");
-                    printf((filestat.st_mode & S_IWUSR) ? "w" : "-");
-                    printf((filestat.st_mode & S_IXUSR) ? "x" : "-");
-                    printf((filestat.st_mode & S_IRGRP) ? "r" : "-");
-                    printf((filestat.st_mode & S_IWGRP) ? "w" : "-");
-                    printf((filestat.st_mode & S_IXGRP) ? "x" : "-");
-                    printf((filestat.st_mode & S_IROTH) ? "r" : "-");
-                    printf((filestat.st_mode & S_IWOTH) ? "w" : "-");
-                    printf((filestat.st_mode & S_IXOTH) ? "x" : "-");
-                    printf("\n");
+					printf("Access rights of %s: \n", path);
+					printf("User:\n");
+                    printf((filestat.st_mode & S_IRUSR) ? "Read - yes\n" : "Read - no\n");
+                    printf((filestat.st_mode & S_IWUSR) ? "Write - yes\n" : "Write - no\n");
+                    printf((filestat.st_mode & S_IXUSR) ? "Execute - yes\n" : "Execute - no\n");
+					printf("Group:\n");
+                    printf((filestat.st_mode & S_IRGRP) ? "Read - yes\n" : "Read - no\n");
+                    printf((filestat.st_mode & S_IWGRP) ? "Write - yes\n" : "Write - no\n");
+                    printf((filestat.st_mode & S_IXGRP) ? "Execute - yes\n" : "Execute - no\n");
+					printf("Others:\n");
+                    printf((filestat.st_mode & S_IROTH) ? "Read - yes\n" : "Read - no\n");
+                    printf((filestat.st_mode & S_IWOTH) ? "Write - yes\n" : "Write - no\n");
+                    printf((filestat.st_mode & S_IXOTH) ? "Execute - yes\n" : "Execute - no\n");
 					break;
 				}
 				default: printf("%c is not a valid operation!", operations[i]);
@@ -165,7 +184,64 @@ void executeOperations(char path[])
 	}
 	if(S_ISDIR(filestat.st_mode))//directory
 	{
+		printf("File type: directory.\n");
 		
+		printMenuDirectory();
+		scanf("%s", operations);
+		for(int i=1; operations[i]; ++i)
+		{
+			switch(operations[i])
+			{
+				case 'n':
+				{
+					getName(path);
+					break;
+				}
+				case 'd':
+				{
+					printf("Size of \"%s\": %lld\n", path, (long long)filestat.st_size);
+					break;
+				}
+				case 'a':
+				{
+					printf("Access rights of %s: \n", path);
+					printf("User:\n");
+                    printf((filestat.st_mode & S_IRUSR) ? "Read - yes\n" : "Read - no\n");
+                    printf((filestat.st_mode & S_IWUSR) ? "Write - yes\n" : "Write - no\n");
+                    printf((filestat.st_mode & S_IXUSR) ? "Execute - yes\n" : "Execute - no\n");
+					printf("Group:\n");
+                    printf((filestat.st_mode & S_IRGRP) ? "Read - yes\n" : "Read - no\n");
+                    printf((filestat.st_mode & S_IWGRP) ? "Write - yes\n" : "Write - no\n");
+                    printf((filestat.st_mode & S_IXGRP) ? "Execute - yes\n" : "Execute - no\n");
+					printf("Others:\n");
+                    printf((filestat.st_mode & S_IROTH) ? "Read - yes\n" : "Read - no\n");
+                    printf((filestat.st_mode & S_IWOTH) ? "Write - yes\n" : "Write - no\n");
+                    printf((filestat.st_mode & S_IXOTH) ? "Execute - yes\n" : "Execute - no\n");
+					break;
+				}
+				case 'c':
+				{
+					DIR *dir;
+					struct dirent *ent;
+					int count=0;
+					if ((dir = opendir (path)) != NULL) {
+						while ((ent = readdir (dir)) != NULL) {
+							int n=strlen(ent->d_name);
+							char name[20];
+							strcpy(name, ent->d_name);
+							if(name[n-1]=='c'&& name[n-2]=='.')
+								count++;
+						}
+						closedir (dir);
+						printf("There are %d \".c\" files in the directory.\n", count);
+					} else {
+						printf("Could not open directory!\n");
+					}
+					break;
+				}
+				default: printf("%c is not a valid operation!", operations[i]);
+			}
+		}
 		return;
 	}
 }
