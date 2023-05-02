@@ -46,10 +46,24 @@ void getName(char *path)
 	printf("%s\n", name);
 }
 
+int score(int errors, int warnings)
+{
+	if(errors==0 && warnings==0)
+		return 10;
+	if(errors>0)
+		return 1;
+	if(warnings>10)
+		return 2;
+	return 2+8*(10-warnings)/10;
+}
+
 void executeOperations(char path[])
 {
 	struct stat filestat;
 	pid_t pid, pid1, pid2;
+	int wstatus;
+	pid_t w;
+	int pipefd[2];
 	
 	if(lstat(path, &filestat)<0)
 	{
@@ -73,6 +87,10 @@ void executeOperations(char path[])
 			count++;
 			if(pid1==0)
 			{
+				// close(pipefd[0]);
+				// dup2(pipefd[1], STDOUT_FILENO);
+				
+				
 				char *arguments[] = {"bash", "script.sh", path, "error.txt", NULL};
 				printf("This is a .c file. Executing script 'script.sh'\n");
 				if(execv("/usr/bin/bash", arguments)==-1)
@@ -111,7 +129,8 @@ void executeOperations(char path[])
 		printf("Failed to create the child process.\n");
 		exit(1);
 	}
-	
+	count++;
+
 	if(pid==0)
 	{
 		
@@ -329,24 +348,20 @@ void executeOperations(char path[])
 			return;
 		}
 	}
-	// for(int i=0; i<count; ++i)
-	// {
-		// int wstatus;
-		// pid_t w=wait(&wstatus);
-		// if (w == -1) 
-		// {
-		    // perror("waitpid");
-		    // exit(EXIT_FAILURE);
-		// }
-		// if (WIFEXITED(wstatus)) 
-		// {
-		    // printf("exited child process with id%d, status=%d\n", w, WEXITSTATUS(wstatus));
-		// }
-	// }
-	// exit(EXIT_SUCCESS);
-	wait(NULL);
-	wait(NULL);
-	
+	for(int i=0; i<count; i++)
+	{
+		w=wait(&wstatus);
+		if (w == -1) 
+		{
+		    perror("waitpid");
+		    exit(EXIT_FAILURE);
+		}
+		if (WIFEXITED(wstatus)) 
+		{
+		    printf("exited child process with id%d, status=%d\n", w, WEXITSTATUS(wstatus));
+		}
+		
+	}	
 }
 
 int main(int argc, char* argv[])
@@ -356,6 +371,8 @@ int main(int argc, char* argv[])
 		char path[50];
 		strcpy(path, argv[i]);
 		executeOperations(path);
+		
+		
 	}
 
 }
