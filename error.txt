@@ -1,13 +1,7 @@
 file.c: In function ‘main’:
-file.c:6:21: error: expected ‘;’ before ‘return’
-    6 |         printf("!!")
-      |                     ^
-      |                     ;
-    7 |         return 0;
-      |         ~~~~~~       
-file.c:4:21: warning: unused variable ‘c’ [-Wunused-variable]
-    4 |         int a=5, b, c;
-      |                     ^
-file.c:4:18: warning: unused variable ‘b’ [-Wunused-variable]
-    4 |         int a=5, b, c;
-      |                  ^
+file.c:4:14: warning: unused variable ‘c’ [-Wunused-variable]
+    4 |  int a=5, b, c;
+      |              ^
+file.c:4:11: warning: unused variable ‘b’ [-Wunused-variable]
+    4 |  int a=5, b, c;
+      |           ^

@@ -9,6 +9,23 @@
 #include <time.h>
 #include "functions.c"
 
+int numberOfLines(char fileName[])
+{
+	FILE *fin = fopen(fileName, "r");
+	
+	int counter=1;
+	char c;
+	while((c=fgetc(fin))>0)
+	{
+		if(c=='\n')
+			counter++;
+	}
+	
+	return counter;
+	
+	fclose(fin);
+}
+
 void getName(char *path)
 {
 	char name[30]; strcpy(name, path);
@@ -260,16 +277,22 @@ int score(int errors, int warnings)
 void executeOperations(char path[])
 {
 	struct stat filestat;
-	pid_t pid, pid1, pid2;
+	pid_t pid, pid1, pid2, pid3;
 	int wstatus;
 	pid_t w;
-	// int pipefd[2];
+	int pipefd[2];
 	
 	if(lstat(path, &filestat)<0)
 	{
 		printf("Eror: unable to stat \"%s\" ", path);
 		return;
 	}
+	
+	if (pipe(pipefd) == -1) {
+        perror("pipe");
+        exit(EXIT_FAILURE);
+    }
+	
 	printf("Name: ");
 	getName(path);
 	int count=0;
@@ -286,8 +309,8 @@ void executeOperations(char path[])
 			count++;
 			if(pid1==0)
 			{
-				// close(pipefd[0]);
-				// dup2(pipefd[1], STDOUT_FILENO);
+				close(pipefd[0]);
+				dup2(pipefd[1], STDOUT_FILENO);
 				
 				char *arguments[] = {"bash", "script.sh", path, "error.txt", NULL};
 				printf("This is a .c file. Executing script 'script.sh'\n");
@@ -297,6 +320,23 @@ void executeOperations(char path[])
 					exit(EXIT_FAILURE);
 				}
 				exit(0);
+			}
+			else
+			{
+				close(pipefd[1]);
+				ssize_t num_read;
+				char buffer[50];
+				int errors, warnings;
+				while ((num_read = read(pipefd[0], buffer, sizeof(buffer))) > 0) {
+					sscanf(buffer, "number of errors: %d\nnumber of warnings: %d", &errors, &warnings);
+
+					int s = score(errors, warnings);
+					
+					FILE *output_file = fopen("grades.txt", "w");
+					fprintf(output_file, "%s: %d\n", path, s);
+					
+					fclose(output_file);
+				}
 			}
 		}
 	}
@@ -310,8 +350,11 @@ void executeOperations(char path[])
 		count++;
 		if(pid2==0)
 		{
-			char *arguments[] = {"touch", "newFile.txt", NULL};
-			printf("Creating a text file with the name 'newFile.txt'.\n");
+			char fileName[50];
+			strcpy(fileName, path);
+			strcat(fileName, "_file.txt");
+			char *arguments[] = {"touch", fileName, NULL};
+			printf("Creating a text file with the name %s.\n", fileName);
 			if(execv("/usr/bin/touch", arguments)==-1)
 			{
 				perror("execv");
@@ -320,7 +363,29 @@ void executeOperations(char path[])
 			exit(0);
 		}
 	}
-
+	if(S_ISLNK(filestat.st_mode))
+	{
+		if((pid3=fork())<0)
+		{
+			printf("Failed to create pid2 child process.\n");
+			exit(1);
+		}
+		count++;
+		if(pid3==0)
+		{
+			char fileName[50];
+			strcpy(fileName, path);
+			strcat(fileName, "_file.txt");
+			char *arguments[] = {"touch", fileName, NULL};
+			printf("Creating a text file with the name %s.\n", fileName);
+			if(execv("/usr/bin/touch", arguments)==-1)
+			{
+				perror("execv");
+				exit(EXIT_FAILURE);
+			}
+			exit(0);
+		}
+	}
 	
 	if((pid=fork()) < 0)
 	{
@@ -367,7 +432,7 @@ void executeOperations(char path[])
 		}
 		if (WIFEXITED(wstatus)) 
 		{
-		    printf("exited child process with id%d, status=%d\n", w, WEXITSTATUS(wstatus));
+		    printf("The process with PID %d has ended with the exit code %d.\n", w, WEXITSTATUS(wstatus));
 		}
 		
 	}	
@@ -383,6 +448,6 @@ int main(int argc, char* argv[])
 		
 		
 	}
-
+	// printf("%d", numberOfLines(argv[1]));
 }
  
