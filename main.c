@@ -9,8 +9,10 @@
 #include <time.h>
 #include "functions.c"
 
-void executeOperations(char path[])
+void executeOperations(char s[])
 {
+	char path[50];
+	strcpy(path, s);
 	struct stat filestat;
 	pid_t pid, pid1, pid2, pid3;
 	int wstatus;
@@ -28,7 +30,7 @@ void executeOperations(char path[])
         exit(EXIT_FAILURE);
     }
 	
-	printf("Name: ");
+	printf("\nName: ");
 	getName(path);
 	int count=0;
 	
@@ -38,12 +40,13 @@ void executeOperations(char path[])
 		{
 			if((pid1=fork())<0)
 			{
-				printf("Failed to create pid1 child process.\n");
+				printf("\nFailed to create the child process responsible with running the script.\n");
 				exit(1);
 			}
 			count++;
 			if(pid1==0)
 			{
+				// printf("\nChild process with PID %d created for the child process responsible with running the script.\n", getpid());
 				close(pipefd[0]);
 				dup2(pipefd[1], STDOUT_FILENO);
 				
@@ -78,31 +81,32 @@ void executeOperations(char path[])
 		{
 			if((pid1=fork())<0)
 			{
-				printf("Failed to create pid1 child process.\n");
+				printf("\nFailed to create the child process responsible with counting the lines of a file.\n");
 				exit(1);
 			}
 			count++;
 			if(pid1==0)
 			{
+				// printf("\nChild process with PID %d created for the child process responsible with counting the lines of a file.\n", getpid());
 				close(pipefd[0]);
 				
 				printf("The file %s has %d lines.\n", path, numberOfLines(path));
 				
 				exit(0);
 			}
-			
 		}
 	}
 	if(S_ISDIR(filestat.st_mode))
 	{
 		if((pid2=fork())<0)
 		{
-			printf("Failed to create pid2 child process.\n");
-			exit(1);
+			printf("\nFailed to create the child process responsible with creating a new text file.\n");
+			exit(2);
 		}
 		count++;
 		if(pid2==0)
 		{
+			// printf("\nChild process with PID %d created for the child process responsible with creating a new text file.\n", getpid());
 			char fileName[50];
 			strcpy(fileName, path);
 			strcat(fileName, "_file.txt");
@@ -120,12 +124,13 @@ void executeOperations(char path[])
 	{
 		if((pid3=fork())<0)
 		{
-			printf("Failed to create pid2 child process.\n");
-			exit(1);
+			printf("\nFailed to create the child process responsible with changing the permissions of the link.\n");
+			exit(3);
 		}
 		count++;
 		if(pid3==0)
 		{
+			// printf("\nChild process with PID %d created for the child process responsible with changing the permissions of the link.\n", getpid());
 			char *arguments[] = {"chmod", "-v", "760", path, NULL};
 			printf("Changing the permissions of the link %s.\n", path);
 			if(execv("/usr/bin/chmod", arguments)==-1)
@@ -139,42 +144,42 @@ void executeOperations(char path[])
 	
 	if((pid=fork()) < 0)
 	{
-		printf("Failed to create the child process.\n");
-		exit(1);
+		printf("\nFailed to create the child process responsible with the menu.\n");
+		exit(4);
 	}
 	count++;
 
 	if(pid==0)
 	{
-		
+		// printf("\nChild process with PID %d created for the child process responsible with the menu.\n", getpid());
 		if(S_ISREG(filestat.st_mode))//regular file
 		{
-			printf("File type: regular file.\n");
+			printf("\nFile type: regular file.\n");
 			
 			regularFileOperations(path);
 			
-			return;
+			exit(0);
 		}
 		if(S_ISLNK(filestat.st_mode))//symbolic link
 		{
-			printf("File type: symbolic link.\n");
+			printf("\nFile type: symbolic link.\n");
 			
 			symbolicLinkOperations(path);
 			
-			return;
+			exit(0);
 		}
 		if(S_ISDIR(filestat.st_mode))//directory
 		{
-			printf("File type: directory.\n");
+			printf("\nFile type: directory.\n");
 			
 			directoryOperations(path);
 
-			return;
+			exit(0);
 		}
 	}
 	
 	printf("PID count: %d\n", count);
-	for(int i=0; i<count; i++)
+	for(int i=0; i<count; ++i)
 	{
 		w=wait(&wstatus);
 		if (w == -1) 
@@ -196,8 +201,7 @@ int main(int argc, char* argv[])
 	{
 		char path[50];
 		strcpy(path, argv[i]);
-		executeOperations(path);
-		
+		executeOperations(strdup(path));
 	}
 }
  
