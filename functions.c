@@ -1,9 +1,12 @@
-void getName(char *path)
+char name[50];
+
+void getName(char *path, char fileName[])
 {
 	char name[30]; strcpy(name, path);
 	if(strchr(name, '/')!=NULL)
 		strcpy(name, strrchr(name, '/')+1);
 	printf("%s\n", name);
+	strcpy(fileName, name);
 }
 
 void printMenuRegularFile()
@@ -56,39 +59,39 @@ void regularFileOperations(char path[])
 		{
 			case 'n': 
 			{
-				getName(path);
+				getName(path, name);
 				break;
 			}
 			case 'd': 
 			{
-				printf("Size of \"%s\": %lld\n", path, (long long)filestat.st_size);
+				printf("Size of \"%s\": %lld\n", name, (long long)filestat.st_size);
 				break;
 			}
 			case 'h':
 			{
-				printf("Number of hard links of \"%s\": %d\n", path, (int)filestat.st_nlink);
+				printf("Number of hard links of \"%s\": %d\n", name, (int)filestat.st_nlink);
 				break;
 			}
 			case 'm': 
 			{
-				printf("Time of last modification of \"%s\": %s", path, ctime(&filestat.st_mtime));
+				printf("Time of last modification of \"%s\": %s", name, ctime(&filestat.st_mtime));
 				break;
 			}
 			case 'a': 
 			{
-				printf("Access rights of %s: \n", path);
+				printf("Access rights of %s: \n", name);
 				printf("User:\n\n");
 				printf((filestat.st_mode & S_IRUSR) ? "Read - yes\n" : "Read - no\n");
 				printf((filestat.st_mode & S_IWUSR) ? "Write - yes\n" : "Write - no\n");
-				printf((filestat.st_mode & S_IXUSR) ? "Execute - yes\n" : "Execute - no\n");
+				printf((filestat.st_mode & S_IXUSR) ? "Exec - yes\n" : "Exec - no\n");
 				printf("\nGroup:\n\n");
 				printf((filestat.st_mode & S_IRGRP) ? "Read - yes\n" : "Read - no\n");
 				printf((filestat.st_mode & S_IWGRP) ? "Write - yes\n" : "Write - no\n");
-				printf((filestat.st_mode & S_IXGRP) ? "Execute - yes\n" : "Execute - no\n");
+				printf((filestat.st_mode & S_IXGRP) ? "Exec - yes\n" : "Exec - no\n");
 				printf("\nOthers:\n\n");
 				printf((filestat.st_mode & S_IROTH) ? "Read - yes\n" : "Read - no\n");
 				printf((filestat.st_mode & S_IWOTH) ? "Write - yes\n" : "Write - no\n");
-				printf((filestat.st_mode & S_IXOTH) ? "Execute - yes\n" : "Execute - no\n");
+				printf((filestat.st_mode & S_IXOTH) ? "Exec - yes\n" : "Exec - no\n");
 				break;
 			}
 			case 'l': 
@@ -134,47 +137,47 @@ void symbolicLinkOperations(char path[])
 		{
 			case 'n': 
 			{
-				getName(path);
+				getName(path, name);
 				break;
 			}
 			case 'l':
 			{
 				if(unlink(path)<0)
-					printf("Deletion of symbolic link \"%s\" was unsuccessful\n", path);
+					printf("Deletion of symbolic link \"%s\" was unsuccessful\n", name);
 				else
-					printf("Successfully deleted the symbolik link \"%s\"\n", path);
+					printf("Successfully deleted the symbolik link \"%s\"\n", name);
 				return;
 				break;
 			}
 			case 'd': 
 			{
-				printf("Size of \"%s\": %lld\n", path, (long long)filestat.st_size);
+				printf("Size of \"%s\": %lld\n", name, (long long)filestat.st_size);
 				break;
 			}
 			case 't': 
 			{
 				struct stat targetstat;
 				if(stat(path, &targetstat)<0)
-					printf("Error: unable to stat target of \"%s\"\n", path);
+					printf("Error: unable to stat target of \"%s\"\n", name);
 				else
 					printf("Size of target file: %lld\n", (long long) targetstat.st_size);
 				break;
 			}
 			case 'a':
 			{
-				printf("Access rights of %s: \n", path);
+				printf("Access rights of %s: \n", name);
 				printf("User:\n\n");
 				printf((filestat.st_mode & S_IRUSR) ? "Read - yes\n" : "Read - no\n");
 				printf((filestat.st_mode & S_IWUSR) ? "Write - yes\n" : "Write - no\n");
-				printf((filestat.st_mode & S_IXUSR) ? "Execute - yes\n" : "Execute - no\n");
+				printf((filestat.st_mode & S_IXUSR) ? "Exec - yes\n" : "Exec - no\n");
 				printf("\nGroup:\n\n");
 				printf((filestat.st_mode & S_IRGRP) ? "Read - yes\n" : "Read - no\n");
 				printf((filestat.st_mode & S_IWGRP) ? "Write - yes\n" : "Write - no\n");
-				printf((filestat.st_mode & S_IXGRP) ? "Execute - yes\n" : "Execute - no\n");
+				printf((filestat.st_mode & S_IXGRP) ? "Exec - yes\n" : "Exec - no\n");
 				printf("\nOthers:\n\n");
 				printf((filestat.st_mode & S_IROTH) ? "Read - yes\n" : "Read - no\n");
 				printf((filestat.st_mode & S_IWOTH) ? "Write - yes\n" : "Write - no\n");
-				printf((filestat.st_mode & S_IXOTH) ? "Execute - yes\n" : "Execute - no\n");
+				printf((filestat.st_mode & S_IXOTH) ? "Exec - yes\n" : "Exec - no\n");
 				
 				break;
 			}
@@ -209,29 +212,29 @@ void directoryOperations(char path[])
 		{
 			case 'n':
 			{
-				getName(path);
+				getName(path, name);
 				break;
 			}
 			case 'd':
 			{
-				printf("Size of \"%s\": %lld\n", path, (long long)filestat.st_size);
+				printf("Size of \"%s\": %lld\n", name, (long long)filestat.st_size);
 				break;
 			}
 			case 'a':
 			{
-				printf("Access rights of %s: \n", path);
+				printf("Access rights of %s: \n", name);
 				printf("User:\n\n");
 				printf((filestat.st_mode & S_IRUSR) ? "Read - yes\n" : "Read - no\n");
 				printf((filestat.st_mode & S_IWUSR) ? "Write - yes\n" : "Write - no\n");
-				printf((filestat.st_mode & S_IXUSR) ? "Execute - yes\n" : "Execute - no\n");
+				printf((filestat.st_mode & S_IXUSR) ? "Exec - yes\n" : "Exec - no\n");
 				printf("\nGroup:\n\n");
 				printf((filestat.st_mode & S_IRGRP) ? "Read - yes\n" : "Read - no\n");
 				printf((filestat.st_mode & S_IWGRP) ? "Write - yes\n" : "Write - no\n");
-				printf((filestat.st_mode & S_IXGRP) ? "Execute - yes\n" : "Execute - no\n");
+				printf((filestat.st_mode & S_IXGRP) ? "Exec - yes\n" : "Exec - no\n");
 				printf("\nOthers:\n\n");
 				printf((filestat.st_mode & S_IROTH) ? "Read - yes\n" : "Read - no\n");
 				printf((filestat.st_mode & S_IWOTH) ? "Write - yes\n" : "Write - no\n");
-				printf((filestat.st_mode & S_IXOTH) ? "Execute - yes\n" : "Execute - no\n");
+				printf((filestat.st_mode & S_IXOTH) ? "Exec - yes\n" : "Exec - no\n");
 				
 				break;
 			}
@@ -249,9 +252,9 @@ void directoryOperations(char path[])
 							count++;
 					}
 					closedir (dir);
-					printf("There are %d \".c\" files in the directory.\n", count);
+					printf("There are %d \".c\" files in the directory %s.\n", count, name);
 				} else {
-					printf("Could not open directory!\n");
+					printf("Could not open directory %s!\n", name);
 				}
 				break;
 			}

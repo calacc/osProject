@@ -1,13 +1,10 @@
-file.c: In function ‘main’:
-file.c:6:14: error: expected ‘;’ before ‘return’
-    6 |  printf("!!")
-      |              ^
-      |              ;
-    7 |  return 0;
-      |  ~~~~~~       
-file.c:4:14: warning: unused variable ‘c’ [-Wunused-variable]
-    4 |  int a=5, b, c;
-      |              ^
-file.c:4:11: warning: unused variable ‘b’ [-Wunused-variable]
-    4 |  int a=5, b, c;
-      |           ^
+newDir/dir1/file1.c: In function ‘main’:
+newDir/dir1/file1.c:5:23: error: expected ‘;’ before ‘return’
+    5 |         printf("hehe")
+      |                       ^
+      |                       ;
+    6 |         return 0;
+      |         ~~~~~~         
+newDir/dir1/file1.c:4:13: warning: unused variable ‘a’ [-Wunused-variable]
+    4 |         int a[5];
+      |             ^

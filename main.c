@@ -9,10 +9,8 @@
 #include <time.h>
 #include "functions.c"
 
-void executeOperations(char s[])
+void executeOperations(char path[])
 {
-	char path[50];
-	strcpy(path, s);
 	struct stat filestat;
 	pid_t pid, pid1, pid2, pid3;
 	int wstatus;
@@ -31,7 +29,7 @@ void executeOperations(char s[])
     }
 	
 	printf("\nName: ");
-	getName(path);
+	getName(path, name);
 	int count=0;
 	
 	if(S_ISREG(filestat.st_mode))
@@ -47,11 +45,19 @@ void executeOperations(char s[])
 			if(pid1==0)
 			{
 				// printf("\nChild process with PID %d created for the child process responsible with running the script.\n", getpid());
-				close(pipefd[0]);
-				dup2(pipefd[1], STDOUT_FILENO);
+				if(close(pipefd[0])==-1)
+				{
+					perror("close");
+					exit(EXIT_FAILURE);
+				}
+				if(dup2(pipefd[1], STDOUT_FILENO)==-1)
+				{
+					perror("dup2");
+					exit(EXIT_FAILURE);
+				}
 				
 				char *arguments[] = {"bash", "script.sh", path, "error.txt", NULL};
-				printf("This is a .c file. Executing script 'script.sh'\n");
+				printf("This is a .c file. Executing script 'script.sh'.\n");
 				if(execv("/usr/bin/bash", arguments)==-1)
 				{
 					perror("execv");
@@ -61,7 +67,11 @@ void executeOperations(char s[])
 			}
 			else
 			{
-				close(pipefd[1]);
+				if(close(pipefd[1])==-1)
+				{
+					perror("close");
+					exit(EXIT_FAILURE);
+				}
 				ssize_t num_read;
 				char buffer[50];
 				int errors, warnings;
@@ -71,7 +81,7 @@ void executeOperations(char s[])
 					int s = score(errors, warnings);
 					
 					FILE *output_file = fopen("grades.txt", "w");
-					fprintf(output_file, "%s: %d\n", path, s);
+					fprintf(output_file, "%s: %d\n", name, s);
 					
 					fclose(output_file);
 				}
